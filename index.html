@@ -289,10 +289,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div style="position: relative;">
-                <h1>🥚 The Daily Yolk</h1>
-                <button class="settings-button" onclick="showCredentialsModal()" title="Settings">⚙️</button>
-            </div>
+            <h1>🥚 The Daily Yolk</h1>
         </div>
 
         <div id="message-container"></div>
@@ -478,51 +475,70 @@
             clearMessage();
             
             try {
-                await submitToAPI();
+                await submitToGoogleSheets();
                 showMessage('Successfully submitted!', 'success');
                 resetForm();
             } catch (error) {
                 console.error('Submission error:', error);
-                showMessage('Error submitting entry. Please try again.', 'error');
+                showMessage(`Error: ${error.message}`, 'error');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Submit';
             }
         }
 
-
-
-        async function submitToAPI() {
+        async function submitToGoogleSheets() {
+            // Prepare the data
             const dateEaten = `${String(currentDate.getMonth() + 1).padStart(2, '0')}/${String(currentDate.getDate()).padStart(2, '0')}/${currentDate.getFullYear()}`;
             
-            const response = await fetch('/api/submit-entry', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    dateEaten,
-                    preparation: selectedPreparation,
-                    quantity
-                })
-            });
+            const requestData = {
+                dateEaten,
+                preparation: selectedPreparation,
+                quantity
+            };
             
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to submit entry');
+            console.log('Submitting to API:', requestData);
+            
+            try {
+                const response = await fetch('/api/submit-entry', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    let errorMessage = 'Failed to submit entry';
+                    
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.error || errorMessage;
+                    } catch (parseError) {
+                        errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                    }
+                    
+                    throw new Error(errorMessage);
+                }
+                
+                const result = await response.json();
+                console.log('Successfully submitted:', result);
+                
+            } catch (fetchError) {
+                if (fetchError.name === 'TypeError' && fetchError.message.includes('fetch')) {
+                    throw new Error('Network error. Please check your internet connection.');
+                }
+                throw fetchError;
             }
-            
-            const result = await response.json();
-            console.log('Successfully submitted:', result);
         }
 
         function showSetupInstructions() {
             const instructions = `
-The Daily Yolk is now configured to work automatically!
+The Daily Yolk is configured to work automatically using secure server-side authentication!
 
-No setup required - just start tracking your eggs. The app will securely save your data to Google Sheets using server-side authentication.
+No manual setup required - just start tracking your eggs. The app securely saves your data to Google Sheets using environment variables configured on the server.
 
-If you're having issues, contact the app administrator.
+If you're having issues, please check that the server environment variables are properly configured.
             `;
             
             alert(instructions);
