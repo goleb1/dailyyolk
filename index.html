@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍳 The Daily Yolk</title>
+    <meta name="description" content="Mobile-first egg consumption tracking app">
+    <meta name="theme-color" content="#FFD700">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Daily Yolk">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #FFFEF7;
+            color: #333333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid #FFD700;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333333;
+        }
+
+        .date-section {
+            text-align: center;
+            padding: 16px;
+            background: #FFF8DC;
+            border-radius: 12px;
+            border: 2px solid #FFD700;
+        }
+
+        .date-display {
+            font-size: 18px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .date-display:hover {
+            background-color: #FFD700;
+        }
+
+        .preparation-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 16px;
+        }
+
+        .prep-button {
+            padding: 16px 12px;
+            font-size: 16px;
+            font-weight: 500;
+            border: 2px solid #FFD700;
+            background: #FFF8DC;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .prep-button:hover {
+            background-color: #FFE55C;
+        }
+
+        .prep-button.selected {
+            background-color: #FFD700;
+            color: #333333;
+            font-weight: 600;
+        }
+
+        .quantity-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 16px;
+        }
+
+        .quantity-button {
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            font-weight: 600;
+            border: 2px solid #FFD700;
+            background: #FFF8DC;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quantity-button:hover {
+            background-color: #FFD700;
+        }
+
+        .quantity-button:disabled {
+            background-color: #f0f0f0;
+            border-color: #ccc;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .quantity-display {
+            font-size: 28px;
+            font-weight: 600;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .submit-section {
+            padding: 16px;
+            margin-top: auto;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: 600;
+            background-color: #28A745;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .submit-button:hover {
+            background-color: #218838;
+        }
+
+        .submit-button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #FFFEF7;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 300px;
+            position: relative;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .calendar-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #FFD700;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+
+        .calendar-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .calendar-button {
+            padding: 8px 16px;
+            border: 2px solid #FFD700;
+            background: #FFF8DC;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .calendar-button.primary {
+            background-color: #FFD700;
+            font-weight: 600;
+        }
+
+        .settings-button {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .settings-button:hover {
+            background-color: rgba(255, 215, 0, 0.2);
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 8px;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .prep-button {
+                font-size: 14px;
+                padding: 14px 8px;
+                min-height: 55px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div style="position: relative;">
+                <h1>🥚 The Daily Yolk</h1>
+                <button class="settings-button" onclick="showCredentialsModal()" title="Settings">⚙️</button>
+            </div>
+        </div>
+
+        <div id="message-container"></div>
+
+        <div class="date-section">
+            <div class="date-display" id="dateDisplay" onclick="openCalendar()" role="button" tabindex="0" aria-label="Select date for egg consumption">
+                Today's Date
+            </div>
+        </div>
+
+        <div class="preparation-section" role="group" aria-label="Egg preparation style">
+            <button class="prep-button selected" data-prep="Scrambled" onclick="selectPreparation('Scrambled')" aria-pressed="true">
+                Scrambled
+            </button>
+            <button class="prep-button" data-prep="Fried" onclick="selectPreparation('Fried')" aria-pressed="false">
+                Fried
+            </button>
+            <button class="prep-button" data-prep="Boiled" onclick="selectPreparation('Boiled')" aria-pressed="false">
+                Boiled
+            </button>
+            <button class="prep-button" data-prep="Other" onclick="selectPreparation('Other')" aria-pressed="false">
+                Other
+            </button>
+        </div>
+
+        <div class="quantity-section" role="group" aria-label="Egg quantity selector">
+            <button class="quantity-button" onclick="changeQuantity(-1)" aria-label="Decrease quantity">−</button>
+            <div class="quantity-display" id="quantityDisplay" aria-label="Current quantity: 3 eggs">3</div>
+            <button class="quantity-button" onclick="changeQuantity(1)" aria-label="Increase quantity">+</button>
+        </div>
+
+        <div class="submit-section">
+            <button class="submit-button" onclick="submitEntry()">Submit</button>
+        </div>
+    </div>
+
+    <!-- Calendar Modal -->
+    <div id="calendarModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCalendar()">&times;</span>
+            <h3>Select Date</h3>
+            <input type="date" id="calendarInput" class="calendar-input">
+            <div class="calendar-buttons">
+                <button class="calendar-button" onclick="closeCalendar()">Cancel</button>
+                <button class="calendar-button primary" onclick="selectDate()">Select</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentDate = new Date();
+        let selectedPreparation = 'Scrambled';
+        let quantity = 3;
+
+        // Configuration - Replace with your actual values
+        const CONFIG = {
+            GOOGLE_SHEETS_ID: 'YOUR_SHEET_ID_HERE',
+            GOOGLE_SERVICE_ACCOUNT_EMAIL: 'YOUR_SERVICE_ACCOUNT_EMAIL_HERE',
+            GOOGLE_PRIVATE_KEY: 'YOUR_PRIVATE_KEY_HERE'
+        };
+
+        // Initialize app
+        function init() {
+            updateDateDisplay();
+            updateQuantityButtons();
+        }
+
+        // Date functions
+        function formatDate(date) {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+            
+            const dayName = days[date.getDay()];
+            const monthName = months[date.getMonth()];
+            const dayNum = date.getDate();
+            const year = date.getFullYear();
+            
+            const suffix = getDaySuffix(dayNum);
+            
+            return `${dayName.substring(0, 3)}, ${monthName} ${dayNum}${suffix}, ${year}`;
+        }
+
+        function getDaySuffix(day) {
+            if (day >= 11 && day <= 13) return 'th';
+            switch (day % 10) {
+                case 1: return 'st';
+                case 2: return 'nd';
+                case 3: return 'rd';
+                default: return 'th';
+            }
+        }
+
+        function updateDateDisplay() {
+            document.getElementById('dateDisplay').textContent = formatDate(currentDate);
+        }
+
+        function openCalendar() {
+            const modal = document.getElementById('calendarModal');
+            const input = document.getElementById('calendarInput');
+            
+            const today = new Date();
+            const year = currentDate.getFullYear();
+            const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+            const day = String(currentDate.getDate()).padStart(2, '0');
+            
+            input.value = `${year}-${month}-${day}`;
+            input.max = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            
+            modal.style.display = 'block';
+        }
+
+        function closeCalendar() {
+            document.getElementById('calendarModal').style.display = 'none';
+        }
+
+        function selectDate() {
+            const input = document.getElementById('calendarInput');
+            if (input.value) {
+                currentDate = new Date(input.value + 'T00:00:00');
+                updateDateDisplay();
+            }
+            closeCalendar();
+        }
+
+        // Preparation selection
+        function selectPreparation(prep) {
+            selectedPreparation = prep;
+            
+            document.querySelectorAll('.prep-button').forEach(btn => {
+                btn.classList.remove('selected');
+                btn.setAttribute('aria-pressed', 'false');
+            });
+            
+            const selectedBtn = document.querySelector(`[data-prep="${prep}"]`);
+            selectedBtn.classList.add('selected');
+            selectedBtn.setAttribute('aria-pressed', 'true');
+        }
+
+        // Quantity functions
+        function changeQuantity(delta) {
+            const newQuantity = quantity + delta;
+            if (newQuantity >= 1 && newQuantity <= 12) {
+                quantity = newQuantity;
+                const display = document.getElementById('quantityDisplay');
+                display.textContent = quantity;
+                display.setAttribute('aria-label', `Current quantity: ${quantity} egg${quantity !== 1 ? 's' : ''}`);
+                updateQuantityButtons();
+            }
+        }
+
+        function updateQuantityButtons() {
+            const minusBtn = document.querySelector('.quantity-button:first-child');
+            const plusBtn = document.querySelector('.quantity-button:last-child');
+            
+            minusBtn.disabled = quantity <= 1;
+            plusBtn.disabled = quantity >= 12;
+        }
+
+        // Message functions
+        function showMessage(text, type) {
+            const container = document.getElementById('message-container');
+            container.innerHTML = `<div class="message ${type}">${text}</div>`;
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    container.innerHTML = '';
+                }, 3000);
+            }
+        }
+
+        function clearMessage() {
+            document.getElementById('message-container').innerHTML = '';
+        }
+
+        // Form submission
+        async function submitEntry() {
+            const submitBtn = document.querySelector('.submit-button');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            
+            clearMessage();
+            
+            try {
+                await submitToGoogleSheets();
+                showMessage('Successfully submitted!', 'success');
+                resetForm();
+            } catch (error) {
+                console.error('Submission error:', error);
+                showMessage('Error submitting entry. Please try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit';
+            }
+        }
+
+        async function getAccessToken() {
+            // For client-side implementation, we'll need to use a different approach
+            // This is a simplified version that assumes you'll set up proper authentication
+            
+            // Check if we have stored credentials in localStorage
+            const storedCredentials = localStorage.getItem('googleSheetsCredentials');
+            if (!storedCredentials) {
+                throw new Error('Google Sheets credentials not configured. Please set up authentication.');
+            }
+            
+            const credentials = JSON.parse(storedCredentials);
+            
+            // Create JWT for service account authentication
+            const header = {
+                "alg": "RS256",
+                "typ": "JWT"
+            };
+            
+            const now = Math.floor(Date.now() / 1000);
+            const payload = {
+                "iss": credentials.client_email,
+                "scope": "https://www.googleapis.com/auth/spreadsheets",
+                "aud": "https://oauth2.googleapis.com/token",
+                "exp": now + 3600,
+                "iat": now
+            };
+            
+            // Note: This is a simplified approach. In production, JWT signing should be done server-side
+            // For MVP purposes, we'll use a different authentication method
+            return credentials.access_token || 'demo_token';
+        }
+
+        async function submitToGoogleSheets() {
+            const now = new Date();
+            const timestamp = `${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+            
+            const dateEaten = `${String(currentDate.getMonth() + 1).padStart(2, '0')}/${String(currentDate.getDate()).padStart(2, '0')}/${currentDate.getFullYear()}`;
+            
+            const rowData = [timestamp, dateEaten, selectedPreparation, quantity, ''];
+            
+            try {
+                // Check if credentials are configured
+                const storedCredentials = localStorage.getItem('googleSheetsCredentials');
+                if (!storedCredentials) {
+                    // Show setup instructions
+                    showSetupInstructions();
+                    throw new Error('Google Sheets not configured. Please complete setup first.');
+                }
+                
+                const credentials = JSON.parse(storedCredentials);
+                
+                if (!credentials.sheets_id) {
+                    throw new Error('Google Sheets ID not configured.');
+                }
+                
+                // For MVP, we'll use the simpler approach with an access token
+                // In production, you'd want proper OAuth2 or service account authentication
+                
+                const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${credentials.sheets_id}/values/Sheet1:append?valueInputOption=RAW`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${credentials.access_token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        values: [rowData]
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Google Sheets API error: ${errorData.error?.message || 'Unknown error'}`);
+                }
+                
+                console.log('Successfully submitted to Google Sheets:', rowData);
+                
+            } catch (error) {
+                console.error('Google Sheets submission error:', error);
+                throw error;
+            }
+        }
+
+        function showSetupInstructions() {
+            const instructions = `
+To use The Daily Yolk, you need to set up Google Sheets integration:
+
+1. Go to Google Cloud Console (console.cloud.google.com)
+2. Create a new project or select existing
+3. Enable Google Sheets API
+4. Create credentials (OAuth 2.0 or Service Account)
+5. Get your access token and sheet ID
+6. Click the Settings button below to enter your credentials
+
+For detailed instructions, see the README file.
+            `;
+            
+            if (confirm(instructions + '\n\nWould you like to enter your credentials now?')) {
+                showCredentialsModal();
+            }
+        }
+
+        function showCredentialsModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 500px;">
+                    <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                    <h3>Google Sheets Setup</h3>
+                    <div style="margin: 16px 0;">
+                        <label>Google Sheets ID:</label>
+                        <input type="text" id="sheetsId" class="calendar-input" placeholder="Your sheet ID from the URL">
+                    </div>
+                    <div style="margin: 16px 0;">
+                        <label>Access Token:</label>
+                        <input type="password" id="accessToken" class="calendar-input" placeholder="Your access token">
+                    </div>
+                    <div class="calendar-buttons">
+                        <button class="calendar-button" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+                        <button class="calendar-button primary" onclick="saveCredentials()">Save</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function saveCredentials() {
+            const sheetsId = document.getElementById('sheetsId').value;
+            const accessToken = document.getElementById('accessToken').value;
+            
+            if (!sheetsId || !accessToken) {
+                alert('Please fill in both fields');
+                return;
+            }
+            
+            const credentials = {
+                sheets_id: sheetsId,
+                access_token: accessToken
+            };
+            
+            localStorage.setItem('googleSheetsCredentials', JSON.stringify(credentials));
+            alert('Credentials saved! You can now submit entries.');
+            
+            document.querySelector('.modal').remove();
+        }
+
+        function resetForm() {
+            currentDate = new Date();
+            selectedPreparation = 'Scrambled';
+            quantity = 3;
+            
+            updateDateDisplay();
+            selectPreparation('Scrambled');
+            document.getElementById('quantityDisplay').textContent = quantity;
+            updateQuantityButtons();
+        }
+
+        // Event listeners
+        window.onclick = function(event) {
+            const modal = document.getElementById('calendarModal');
+            if (event.target === modal) {
+                closeCalendar();
+            }
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', function(event) {
+            // ESC to close modal
+            if (event.key === 'Escape') {
+                const modal = document.getElementById('calendarModal');
+                if (modal.style.display === 'block') {
+                    closeCalendar();
+                }
+            }
+            
+            // Enter/Space for date display
+            if ((event.key === 'Enter' || event.key === ' ') && event.target.id === 'dateDisplay') {
+                event.preventDefault();
+                openCalendar();
+            }
+            
+            // Number keys for quantity (1-9)
+            if (event.key >= '1' && event.key <= '9') {
+                const num = parseInt(event.key);
+                if (num <= 12) {
+                    quantity = num;
+                    const display = document.getElementById('quantityDisplay');
+                    display.textContent = quantity;
+                    display.setAttribute('aria-label', `Current quantity: ${quantity} egg${quantity !== 1 ? 's' : ''}`);
+                    updateQuantityButtons();
+                }
+            }
+            
+            // Arrow keys for quantity
+            if (event.key === 'ArrowUp' || event.key === 'ArrowRight') {
+                changeQuantity(1);
+            } else if (event.key === 'ArrowDown' || event.key === 'ArrowLeft') {
+                changeQuantity(-1);
+            }
+            
+            // Keyboard shortcuts for preparation styles
+            if (event.key.toLowerCase() === 's') {
+                selectPreparation('Scrambled');
+            } else if (event.key.toLowerCase() === 'f') {
+                selectPreparation('Fried');
+            } else if (event.key.toLowerCase() === 'b') {
+                selectPreparation('Boiled');
+            } else if (event.key.toLowerCase() === 'o') {
+                selectPreparation('Other');
+            }
+            
+            // Enter to submit (when not in a modal)
+            if (event.key === 'Enter' && !document.getElementById('calendarModal').style.display) {
+                const activeElement = document.activeElement;
+                if (activeElement.tagName !== 'INPUT' && activeElement.tagName !== 'BUTTON') {
+                    submitEntry();
+                }
+            }
+        });
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
