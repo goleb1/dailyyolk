@@ -1,4 +1,4 @@
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   try {
     // Check which environment variables are set
     const envVars = {
@@ -27,4 +27,4 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-}; 
+} 

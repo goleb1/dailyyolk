@@ -1,6 +1,6 @@
-const { GoogleAuth } = require('google-auth-library');
+import { GoogleAuth } from 'google-auth-library';
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -61,4 +61,4 @@ module.exports = async function handler(req, res) {
     console.error('API Error:', error);
     res.status(500).json({ error: 'Failed to submit entry' });
   }
-}; 
+} 
