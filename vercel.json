@@ -1,19 +1,5 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "index.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "*.js",
-      "use": "@vercel/node"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",
