@@ -514,9 +514,19 @@
                     try {
                         const errorData = await response.json();
                         errorMessage = errorData.error || errorMessage;
+                        console.error('API Error Response:', errorData);
                     } catch (parseError) {
+                        const responseText = await response.text();
                         errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                        console.error('Raw Error Response:', responseText);
+                        console.error('Parse Error:', parseError);
                     }
+                    
+                    console.error('Full Response Details:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        headers: Object.fromEntries(response.headers.entries())
+                    });
                     
                     throw new Error(errorMessage);
                 }
