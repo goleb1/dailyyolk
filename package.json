@@ -1,15 +1,15 @@
 {
-  "name": "dailyyolk-token-generator",
+  "name": "dailyyolk",
   "version": "1.0.0",
-  "description": "Generate Google Sheets access tokens for The Daily Yolk app",
-  "main": "generate-token.js",
+  "description": "A mobile-first egg consumption tracking app",
+  "main": "index.html",
   "scripts": {
-    "generate-token": "node generate-token.js"
+    "dev": "vercel dev"
   },
   "dependencies": {
     "google-auth-library": "^9.0.0"
   },
-  "keywords": ["google-sheets", "oauth", "token"],
+  "keywords": ["egg-tracker", "google-sheets", "pwa"],
   "author": "Your Name",
   "license": "MIT"
 } 
