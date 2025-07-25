@@ -93,8 +93,39 @@ export default async function handler(req, res) {
     const accessToken = await client.getAccessToken();
     console.log('Access token obtained:', !!accessToken.token);
 
-    // Submit to Google Sheets
-    const sheetsUrl = `https://sheets.googleapis.com/v4/spreadsheets/${process.env.GOOGLE_SHEET_ID}/values/Sheet1:append?valueInputOption=RAW`;
+    // Get sheet name (default to 'Sheet1' if not specified)
+    const sheetName = process.env.GOOGLE_SHEET_NAME || 'Sheet1';
+    console.log('Using sheet name:', sheetName);
+
+    // First, let's try to get sheet info to verify it exists
+    const sheetInfoUrl = `https://sheets.googleapis.com/v4/spreadsheets/${process.env.GOOGLE_SHEET_ID}`;
+    console.log('Getting sheet info from:', sheetInfoUrl);
+    
+    const sheetInfoResponse = await fetch(sheetInfoUrl, {
+      headers: {
+        'Authorization': `Bearer ${accessToken.token}`,
+      }
+    });
+
+    if (!sheetInfoResponse.ok) {
+      const errorText = await sheetInfoResponse.text();
+      console.error('Failed to get sheet info:', errorText);
+      throw new Error(`Cannot access spreadsheet: ${errorText}`);
+    }
+
+    const sheetInfo = await sheetInfoResponse.json();
+    console.log('Available sheets:', sheetInfo.sheets?.map(s => s.properties.title) || 'Unknown');
+
+    // Check if our target sheet exists
+    const targetSheet = sheetInfo.sheets?.find(s => s.properties.title === sheetName);
+    if (!targetSheet) {
+      const availableSheets = sheetInfo.sheets?.map(s => s.properties.title).join(', ') || 'none';
+      throw new Error(`Sheet "${sheetName}" not found. Available sheets: ${availableSheets}`);
+    }
+
+    // Submit to Google Sheets using a more explicit range
+    const range = `${sheetName}!A:E`; // Explicit range covering columns A through E
+    const sheetsUrl = `https://sheets.googleapis.com/v4/spreadsheets/${process.env.GOOGLE_SHEET_ID}/values/${encodeURIComponent(range)}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
     console.log('Submitting to Google Sheets URL:', sheetsUrl);
 
     const response = await fetch(sheetsUrl, {
