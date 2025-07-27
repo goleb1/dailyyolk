@@ -401,6 +401,16 @@
             input.max = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
             
             modal.style.display = 'block';
+            
+            // Automatically trigger the date picker
+            setTimeout(() => {
+                input.showPicker();
+            }, 50);
+            
+            // Auto-select when date changes
+            input.addEventListener('change', function() {
+                selectDate();
+            }, { once: true });
         }
 
         function closeCalendar() {
