@@ -109,8 +109,8 @@
         }
 
         .quantity-button {
-            width: 50px;
-            height: 50px;
+            width: 100px;
+            height: 60px;
             font-size: 24px;
             font-weight: 600;
             border: 2px solid #FFD700;
@@ -188,68 +188,6 @@
             border: 1px solid #f5c6cb;
         }
 
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-
-        .modal-content {
-            background-color: #FFFEF7;
-            margin: 10% auto;
-            padding: 20px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 300px;
-            position: relative;
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            line-height: 1;
-        }
-
-        .close:hover {
-            color: #333;
-        }
-
-        .calendar-input {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            border: 2px solid #FFD700;
-            border-radius: 8px;
-            margin: 16px 0;
-        }
-
-        .calendar-buttons {
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-        }
-
-        .calendar-button {
-            padding: 8px 16px;
-            border: 2px solid #FFD700;
-            background: #FFF8DC;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .calendar-button.primary {
-            background-color: #FFD700;
-            font-weight: 600;
-        }
 
         .settings-button {
             position: absolute;
@@ -298,6 +236,7 @@
             <div class="date-display" id="dateDisplay" onclick="openCalendar()" role="button" tabindex="0" aria-label="Select date for egg consumption">
                 Today's Date
             </div>
+            <input type="date" id="hiddenDateInput" style="position: absolute; left: -9999px; opacity: 0;">
         </div>
 
         <div class="preparation-section" role="group" aria-label="Egg preparation style">
@@ -326,18 +265,6 @@
         </div>
     </div>
 
-    <!-- Calendar Modal -->
-    <div id="calendarModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeCalendar()">&times;</span>
-            <h3>Select Date</h3>
-            <input type="date" id="calendarInput" class="calendar-input">
-            <div class="calendar-buttons">
-                <button class="calendar-button" onclick="closeCalendar()">Cancel</button>
-                <button class="calendar-button primary" onclick="selectDate()">Select</button>
-            </div>
-        </div>
-    </div>
 
     <script>
         // Global state
@@ -389,8 +316,7 @@
         }
 
         function openCalendar() {
-            const modal = document.getElementById('calendarModal');
-            const input = document.getElementById('calendarInput');
+            const input = document.getElementById('hiddenDateInput');
             
             const today = new Date();
             const year = currentDate.getFullYear();
@@ -400,30 +326,22 @@
             input.value = `${year}-${month}-${day}`;
             input.max = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
             
-            modal.style.display = 'block';
+            // Remove any existing event listeners
+            input.removeEventListener('change', handleDateChange);
             
-            // Automatically trigger the date picker
-            setTimeout(() => {
-                input.showPicker();
-            }, 50);
+            // Add event listener for date selection
+            input.addEventListener('change', handleDateChange);
             
-            // Auto-select when date changes
-            input.addEventListener('change', function() {
-                selectDate();
-            }, { once: true });
+            // Trigger the date picker
+            input.showPicker();
         }
 
-        function closeCalendar() {
-            document.getElementById('calendarModal').style.display = 'none';
-        }
-
-        function selectDate() {
-            const input = document.getElementById('calendarInput');
+        function handleDateChange() {
+            const input = document.getElementById('hiddenDateInput');
             if (input.value) {
                 currentDate = new Date(input.value + 'T00:00:00');
                 updateDateDisplay();
             }
-            closeCalendar();
         }
 
         // Preparation selection
@@ -576,22 +494,9 @@ If you're having issues, please check that the server environment variables are 
         }
 
         // Event listeners
-        window.onclick = function(event) {
-            const modal = document.getElementById('calendarModal');
-            if (event.target === modal) {
-                closeCalendar();
-            }
-        }
 
         // Keyboard support
         document.addEventListener('keydown', function(event) {
-            // ESC to close modal
-            if (event.key === 'Escape') {
-                const modal = document.getElementById('calendarModal');
-                if (modal.style.display === 'block') {
-                    closeCalendar();
-                }
-            }
             
             // Enter/Space for date display
             if ((event.key === 'Enter' || event.key === ' ') && event.target.id === 'dateDisplay') {
@@ -629,8 +534,8 @@ If you're having issues, please check that the server environment variables are 
                 selectPreparation('Other');
             }
             
-            // Enter to submit (when not in a modal)
-            if (event.key === 'Enter' && !document.getElementById('calendarModal').style.display) {
+            // Enter to submit
+            if (event.key === 'Enter') {
                 const activeElement = document.activeElement;
                 if (activeElement.tagName !== 'INPUT' && activeElement.tagName !== 'BUTTON') {
                     submitEntry();
