@@ -115,7 +115,7 @@
             font-weight: 600;
             border: 2px solid #FFD700;
             background: #FFF8DC;
-            border-radius: 50%;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.2s;
             display: flex;
@@ -188,24 +188,6 @@
             border: 1px solid #f5c6cb;
         }
 
-
-        .settings-button {
-            position: absolute;
-            top: 0;
-            right: 0;
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 4px;
-            transition: background-color 0.2s;
-        }
-
-        .settings-button:hover {
-            background-color: rgba(255, 215, 0, 0.2);
-        }
-
         @media (max-width: 480px) {
             .container {
                 padding: 8px;
@@ -236,7 +218,7 @@
             <div class="date-display" id="dateDisplay" onclick="openCalendar()" role="button" tabindex="0" aria-label="Select date for egg consumption">
                 Today's Date
             </div>
-            <input type="date" id="hiddenDateInput" style="position: absolute; left: -9999px; opacity: 0;">
+            <input type="date" id="hiddenDateInput" style="position: absolute; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none;">
         </div>
 
         <div class="preparation-section" role="group" aria-label="Egg preparation style">
@@ -332,8 +314,20 @@
             // Add event listener for date selection
             input.addEventListener('change', handleDateChange);
             
-            // Trigger the date picker
-            input.showPicker();
+            // Try to trigger the date picker
+            try {
+                if (input.showPicker) {
+                    input.showPicker();
+                } else {
+                    // Fallback: focus and click the input
+                    input.focus();
+                    input.click();
+                }
+            } catch (error) {
+                // Fallback for browsers that don't support showPicker
+                input.focus();
+                input.click();
+            }
         }
 
         function handleDateChange() {
